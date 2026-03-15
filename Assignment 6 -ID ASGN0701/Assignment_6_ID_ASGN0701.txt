@@ -1,0 +1,161 @@
+Task: Implementing a Transaction Protocol
+1. Introduction
+
+In a banking system, different types of financial transactions such as deposits, withdrawals, and transfers must be handled in a structured and consistent way. A Transaction protocol defines a common interface that all transaction types must follow.
+
+Using a protocol allows different transaction classes to be used interchangeably, which improves flexibility and maintainability of the banking application.
+
+2. Python Implementation of Transaction Protocol
+from typing import Protocol
+
+# Define Transaction Protocol
+class Transaction(Protocol):
+    def execute(self):
+        pass
+
+
+# Bank Account Class
+class BankAccount:
+    def __init__(self, account_holder, balance=0):
+        self.account_holder = account_holder
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+
+    def withdraw(self, amount):
+        if amount > self.balance:
+            raise ValueError("Insufficient balance")
+        self.balance -= amount
+
+    def __str__(self):
+        return f"{self.account_holder} Balance: {self.balance}"
+        
+
+# Deposit Transaction
+class Deposit:
+    def __init__(self, account: BankAccount, amount: float):
+        self.account = account
+        self.amount = amount
+
+    def execute(self):
+        self.account.deposit(self.amount)
+        print(f"Deposited {self.amount} to {self.account.account_holder}")
+
+
+# Withdrawal Transaction
+class Withdrawal:
+    def __init__(self, account: BankAccount, amount: float):
+        self.account = account
+        self.amount = amount
+
+    def execute(self):
+        self.account.withdraw(self.amount)
+        print(f"Withdrawn {self.amount} from {self.account.account_holder}")
+
+
+# Transfer Transaction
+class Transfer:
+    def __init__(self, from_account: BankAccount, to_account: BankAccount, amount: float):
+        self.from_account = from_account
+        self.to_account = to_account
+        self.amount = amount
+
+    def execute(self):
+        self.from_account.withdraw(self.amount)
+        self.to_account.deposit(self.amount)
+        print(f"Transferred {self.amount} from {self.from_account.account_holder} to {self.to_account.account_holder}")
+3. Demonstration in Banking Application
+# Create accounts
+acc1 = BankAccount("Alice", 1000)
+acc2 = BankAccount("Bob", 500)
+
+# Create transaction objects
+transactions = [
+    Deposit(acc1, 200),
+    Withdrawal(acc1, 100),
+    Transfer(acc1, acc2, 300)
+]
+
+# Execute transactions
+for transaction in transactions:
+    transaction.execute()
+
+# Print final balances
+print(acc1)
+print(acc2)
+Output Example
+Deposited 200 to Alice
+Withdrawn 100 from Alice
+Transferred 300 from Alice to Bob
+Alice Balance: 800
+Bob Balance: 800
+4. Unit Testing
+import unittest
+
+class TestTransactions(unittest.TestCase):
+
+    def test_deposit(self):
+        acc = BankAccount("Test", 100)
+        d = Deposit(acc, 50)
+        d.execute()
+        self.assertEqual(acc.balance, 150)
+
+    def test_withdrawal(self):
+        acc = BankAccount("Test", 100)
+        w = Withdrawal(acc, 40)
+        w.execute()
+        self.assertEqual(acc.balance, 60)
+
+    def test_transfer(self):
+        acc1 = BankAccount("A", 200)
+        acc2 = BankAccount("B", 100)
+        t = Transfer(acc1, acc2, 50)
+        t.execute()
+        self.assertEqual(acc1.balance, 150)
+        self.assertEqual(acc2.balance, 150)
+
+if __name__ == "__main__":
+    unittest.main()
+5. Duck Typing in Banking Domain
+
+Duck typing is a programming concept where the type or class of an object is less important than the methods it defines.
+
+In this assignment, any class that implements the execute() method can act as a Transaction, even if it does not explicitly inherit from the Transaction protocol.
+
+Example:
+
+class LoanPayment:
+    def execute(self):
+        print("Loan payment executed")
+
+Since it has an execute() method, it can behave like a transaction.
+
+6. Benefits of Duck Typing
+
+Flexibility
+New transaction types can be added without modifying existing code.
+
+Code Reusability
+Different objects can be used interchangeably.
+
+Loose Coupling
+Classes do not depend heavily on inheritance.
+
+Extensibility
+Easy to expand the system with new transaction types.
+
+7. Limitations of Duck Typing
+
+Runtime Errors
+Errors may occur if a required method is missing.
+
+Less Strict Type Checking
+Bugs may appear if objects do not follow expected behavior.
+
+Harder Debugging
+Problems may only appear during execution.
+
+8. Conclusion
+
+Implementing a Transaction protocol provides a structured way to manage financial transactions in a banking system. Using protocol-based design and duck typing improves flexibility, allowing different transaction types such as deposit, withdrawal, and transfer to work interchangeably. While duck typing increases extensibility, developers must carefully ensure that required methods are implemented to avoid runtime errors.
